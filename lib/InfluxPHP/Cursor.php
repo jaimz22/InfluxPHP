@@ -39,15 +39,25 @@ namespace crodas\InfluxPHP;
 
 use ArrayIterator;
 
+namespace crodas\InfluxPHP;
+
+use ArrayIterator;
+
 class Cursor extends ArrayIterator
 {
     public function __construct(array $resultset)
     {
-        $rows = array();
-        foreach ($resultset as $set) {
+        $rows = [];
+        foreach ($resultset as $k=>$set) {
             foreach ($set['points'] as $row) {
-                $row    = (object)array_combine($set['columns'], $row);
-                $rows[] = $row;
+                if (isset($set['name'])) {
+                    $k = $set['name'];
+                }
+                $row    = array_combine($set['columns'], $row);
+				if (isset($row['time'])) {
+					$row['time'] = new \DateTime('@'.$row['time']);
+				}
+				$rows[$k][] = $row;
             }
         }
         parent::__construct($rows);
